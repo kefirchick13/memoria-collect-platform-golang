@@ -15,7 +15,10 @@ type Config struct {
 }
 
 const (
-	usersTable = "users"
+	usersTable                     = "users"
+	collectionsTable               = "collections"
+	collectionItemsTable           = "collection_items"
+	collectionItemsAssignmentTable = "collections_items_assignment"
 )
 
 // docker run --name Memoria -P -p 127.0.0.1:5433:5432 -e POSTGRES_PASSWORD="1234" postgres:alpine

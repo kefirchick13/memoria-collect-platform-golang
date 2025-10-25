@@ -6,9 +6,9 @@ import (
 
 	"github.com/joho/godotenv" // чтение env файлов
 	"github.com/kefirchick13/memoria-collect-platform-golang"
-	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/handler"
-	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/repository"
-	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/service"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/handler"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/repository"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/service"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper" // чтение конфиг файлов разных  форматов
 	"go.uber.org/zap"        // самый быстрый логгер для go от uber

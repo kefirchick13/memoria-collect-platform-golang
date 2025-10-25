@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/models"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/models"
 )
 
 const (
@@ -30,15 +30,14 @@ func (h *Handler) SignUp(c *gin.Context) {
 	}
 
 	user := &models.User{
-		Name:         input.Name,
-		Mail:         input.Mail,
-		Password:     &input.Password, // Указатель на хэш
-		AuthProvider: "email",
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		Name:      input.Name,
+		Mail:      input.Mail,
+		Password:  &input.Password,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
-	id, err := h.service.Authorization.CreateUser(user)
+	user, err := h.service.Authorization.CreateUser(user)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -48,7 +47,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"id": id,
+		"id": user.ID,
 	})
 }
 

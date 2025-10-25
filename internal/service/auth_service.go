@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/models"
-	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/repository"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/models"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/repository"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -44,20 +44,15 @@ func (s *AuthService) CreateUser(user *models.User) (*models.User, error) {
 
 // Новый метод для поиска/создания GitHub пользователя
 func (s *AuthService) FindOrCreateGitHubUser(githubUser *models.GitHubUser) (*models.User, error) {
-	s.logger.Info("1")
 	// 1. Ищем по GitHub ID
 	existingUser, err := s.repo.GetUserByGitHubID(githubUser.ID)
 	if err == nil && existingUser != nil {
 		return existingUser, nil
 	}
-	s.logger.Info("2")
 
 	// 2. Если не нашли, ищем по email
 	if githubUser.Email != nil && *githubUser.Email != "" {
 		existingUser, err = s.repo.GetUserByEmail(*githubUser.Email)
-
-		existingUserJson, err := json.Marshal(existingUser)
-		s.logger.Infof("existingUser: %s", existingUserJson)
 
 		if err == nil && existingUser != nil {
 			// Привязываем GitHub к существующему аккаунту
@@ -65,18 +60,15 @@ func (s *AuthService) FindOrCreateGitHubUser(githubUser *models.GitHubUser) (*mo
 		}
 	}
 
-	s.logger.Info("3")
-
 	// 3. Создаем нового пользователя
 	newUser := &models.User{
-		Name:         *githubUser.Name,
-		Mail:         *githubUser.Email,
-		GitHubID:     &githubUser.ID,
-		GitHubLogin:  &githubUser.Login,
-		AvatarURL:    &githubUser.AvatarURL,
-		AuthProvider: "github",
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		Name:        *githubUser.Name,
+		Mail:        *githubUser.Email,
+		GitHubID:    &githubUser.ID,
+		GitHubLogin: &githubUser.Login,
+		AvatarURL:   &githubUser.AvatarURL,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 
 	jsonUser, err := json.Marshal(newUser)
@@ -97,11 +89,6 @@ func (s *AuthService) SignInWithPassword(mail string, password string) (string, 
 		return "", fmt.Errorf("user not found")
 	}
 
-	// 2. Проверяем тип аутентификации
-	if user.AuthProvider == "github" {
-		return "", fmt.Errorf("this account uses GitHub authentication")
-	}
-
 	// 3. Проверяем пароль
 	if user.Password == nil {
 		return "", fmt.Errorf("invalid password")
@@ -120,32 +107,39 @@ func (s *AuthService) SignInWithOAuth(user *models.User) (string, error) {
 	return s.generateJWTToken(user.ID, user.Name)
 }
 
-func (s *AuthService) ParseToken(tokenString string) (string, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(tokenSignInKey), nil
-	})
-	if err != nil {
-		return "", err
-	}
-
-	claims, ok := token.Claims.(*jwt.RegisteredClaims)
-	if !ok || !token.Valid {
-		return "", fmt.Errorf("invalid token")
-	}
-
-	return claims.ID, nil
+type CustomClaims struct {
+	UserID int    `json:"user_id"`
+	Name   string `json:"name"`
+	jwt.RegisteredClaims
 }
 
-// ЕДИНЫЙ метод для генерации JWT токена
 func (s *AuthService) generateJWTToken(userID int, name string) (string, error) {
-	claims := jwt.RegisteredClaims{
-		ID:        fmt.Sprintf("%d", userID),
-		Subject:   name,
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExpiredTime)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
+	claims := CustomClaims{
+		UserID: userID,
+		Name:   name,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExpiredTime)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(tokenSignInKey))
+}
+
+func (s *AuthService) ParseToken(tokenString string) (int, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(tokenSignInKey), nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	claims, ok := token.Claims.(*CustomClaims)
+	if !ok || !token.Valid {
+		return 0, fmt.Errorf("invalid token")
+	}
+
+	return claims.UserID, nil
 }
 
 // Методы для работы с паролями

@@ -8,10 +8,9 @@ type User struct {
 	Mail     string  `json:"mail" binding:"required"`
 	Password *string `json:"password,omitempty" db:"password"` // Может быть NULL для OAuth
 
-	AvatarURL    *string `json:"avatar_url,omitempty" db:"avatar_url"`
-	GitHubID     *int    `json:"github_id,omitempty" db:"github_id"`
-	GitHubLogin  *string `json:"github_login,omitempty" db:"github_login"`
-	AuthProvider string  `json:"auth_provider" db:"auth_provider"` // "email" или "github"
+	AvatarURL   *string `json:"avatar_url,omitempty" db:"avatar_url"`
+	GitHubID    *int    `json:"github_id,omitempty" db:"github_id"`
+	GitHubLogin *string `json:"github_login,omitempty" db:"github_login"`
 
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
