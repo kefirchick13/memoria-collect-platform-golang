@@ -18,8 +18,8 @@ type Authorization interface {
 type Collection interface {
 	CreateCollection(collection *models.Collection) (*models.Collection, error)
 	GetCollections(user_id int) ([]models.Collection, error)
-	DeleteCollection(collectionID int, userID int) error
-	GetCollectionByID(collectionID int) (*models.Collection, error)
+	DeleteCollection(collectionID string) error
+	GetCollectionByID(collectionID string) (*models.Collection, error)
 	GetCollectionsWithPagination(userID int, req pagination.PaginationRequest) (*pagination.PaginatedResponse[models.Collection], error)
 }
 

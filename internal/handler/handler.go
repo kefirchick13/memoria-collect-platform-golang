@@ -36,14 +36,16 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		collectinons.GET("", h.GetCollectionList) // User Collections, which him created
 		collectinons.POST("", h.CreateCollection)
-		// items this collection
-		// collectinons.GET("/:uid", h.GetCollectionItems)
+		// Get all collection items
+		collectinons.GET("/:id/items", h.GetCollectionItems)
+		// Add item to collection
+		collectinons.POST("/:id/items", h.AddItemToCollection)
 	}
 
 	collectinon_items := api.Group("/items")
 	collectinon_items.Use((h.userIdentity))
 	{
-		collectinon_items.GET("", h.GetCollectionItemsByType)
+		collectinon_items.GET("", h.GetItemsByType)
 		collectinon_items.POST("", h.CreateCollectionItem)
 	}
 

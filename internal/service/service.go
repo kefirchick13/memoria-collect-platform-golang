@@ -27,7 +27,7 @@ type CollectionItems interface {
 	GetItemByID(collection_item_id string) (*models.CollectionItem, error)
 	DeleteItem(collection_item_id string) error
 	UpdateItem(item *models.CollectionItem) error
-	AddItemToCollection(item_id string, collection_id string, user_review *string) (int, error)
+	AddItemToCollection(item_id string, collection_id string, user_review string, user_id int) (int, error)
 	CreateCollectionItem(item *models.CollectionItem) (string, error)
 }
 
@@ -41,6 +41,6 @@ func NewService(repository *repository.Repository, logger *zap.SugaredLogger) *S
 	return &Service{
 		Authorization:   NewAuthService(repository.Authorization, logger),
 		Collection:      NewCollectionService(repository.Collection, logger),
-		CollectionItems: NewCollectionItemService(repository.CollectionItem, logger),
+		CollectionItems: NewCollectionItemService(repository.CollectionItem, repository.Collection, logger),
 	}
 }

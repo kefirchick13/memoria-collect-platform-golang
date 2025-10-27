@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kefirchick13/memoria-collect-platform-golang/internal/models"
+	"github.com/kefirchick13/memoria-collect-platform-golang/internal/service"
+	"github.com/kefirchick13/memoria-collect-platform-golang/pkg/responses"
 )
 
-func (h *Handler) GetCollectionItemsByType(c *gin.Context) {
+func (h *Handler) GetItemsByType(c *gin.Context) {
 	// search for a type in query params, Default as "book"
 	currType := c.DefaultQuery("type", "book")
 	pagination := GetPaginationParams(c)
@@ -24,7 +27,75 @@ func (h *Handler) GetCollectionItemsByType(c *gin.Context) {
 }
 
 func (h *Handler) GetCollectionItems(c *gin.Context) {
+	user_id, err := GetUserId(c)
+	if err != nil {
+		return
+	}
+	collection_uid := c.Param("id")
+	if collection_uid == "" {
+		responses.NewErrorResponse(c, http.StatusBadRequest, "id hasn't been provided")
+		return
+	}
 
+	items, err := h.service.CollectionItems.GetItemsByCollection(collection_uid, user_id)
+	if err != nil {
+		responses.NewErrorResponse(c, http.StatusNotFound, "items aren't find")
+		return
+	}
+	c.JSON(http.StatusOK, items)
+}
+
+type AddItemInput struct {
+	UserReview string `json:"user_review"`
+	ItemId     string `json:"item_id"`
+}
+
+func (h *Handler) AddItemToCollection(c *gin.Context) {
+	user_id, err := GetUserId(c)
+	if err != nil {
+		return
+	}
+	collection_uid := c.Param("id")
+	if collection_uid == "" {
+		responses.NewErrorResponse(c, http.StatusBadRequest, "id hasn't been provided")
+		return
+	}
+
+	var input AddItemInput
+
+	if err := c.BindJSON(&input); err != nil {
+		responses.NewErrorResponse(c, http.StatusBadRequest, "input is not valid")
+		return
+	}
+
+	_, err = h.service.CollectionItems.AddItemToCollection(input.ItemId, collection_uid, input.UserReview, user_id)
+	if err != nil {
+		switch err {
+		case service.ErrCollectionNotFound:
+			responses.NewErrorResponse(c, http.StatusNotFound, "Collection not found")
+		case service.ErrItemNotFound:
+			responses.NewErrorResponse(c, http.StatusNotFound, "Item not found")
+		case service.ErrNotCollectionOwner:
+			responses.NewErrorResponse(c, http.StatusForbidden, "Access denied")
+		case service.ErrItemAlreadyInCollection:
+			responses.NewErrorResponse(c, http.StatusConflict, "Item already in collection")
+		default:
+			responses.NewErrorResponse(c, http.StatusInternalServerError, fmt.Sprintf("Failed to add item to collection err: %s", err.Error()))
+		}
+		return
+	}
+
+	responses.Success(c, "Item had assigned to the list")
+
+}
+
+type CreateCollectionInput struct {
+	Type        string  `json:"type" db:"type"`
+	Title       string  `json:"title" db:"title"`
+	Description string  `json:"description" db:"description"`
+	CoverImage  *string `json:"cover_image" db:"cover_image"`
+	IsCustom    bool    `json:"is_custom" db:"is_custom"`
+	IsPublic    bool    `json:"is_public" db:"is_public"`
 }
 
 func (h *Handler) CreateCollectionItem(c *gin.Context) {
@@ -32,17 +103,10 @@ func (h *Handler) CreateCollectionItem(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	var input struct {
-		Type        string  `json:"type" db:"type"`
-		Title       string  `json:"title" db:"title"`
-		Description string  `json:"description" db:"description"`
-		CoverImage  *string `json:"cover_image" db:"cover_image"`
-		IsCustom    bool    `json:"is_custom" db:"is_custom"`
-		IsPublic    bool    `json:"is_public" db:"is_public"`
-	}
+	var input CreateCollectionInput
 
 	if err := c.BindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		responses.NewErrorResponse(c, http.StatusBadRequest, "input is not valid")
 		return
 	}
 

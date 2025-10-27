@@ -136,7 +136,7 @@ func (r *CollectionRepository) GetCollections(userID int) ([]models.Collection, 
 	return result.Data, nil
 }
 
-func (r *CollectionRepository) GetCollectionByID(collectionID int) (*models.Collection, error) {
+func (r *CollectionRepository) GetCollectionByID(collectionID string) (*models.Collection, error) {
 	query := fmt.Sprintf(`
         SELECT id, name, description, is_public, cover_image, created_at, user_id, type
         FROM %s
@@ -166,13 +166,13 @@ func (r *CollectionRepository) GetCollectionByID(collectionID int) (*models.Coll
 	return &collection, nil
 }
 
-func (r *CollectionRepository) DeleteCollection(collectionID int, userID int) error {
+func (r *CollectionRepository) DeleteCollection(collectionID string) error {
 	query := fmt.Sprintf(`
         DELETE FROM %s 
-        WHERE id = $1 AND user_id = $2
+        WHERE id = $1
     `, collectionsTable)
 
-	result, err := r.db.Exec(query, collectionID, userID)
+	result, err := r.db.Exec(query, collectionID)
 	if err != nil {
 		r.logger.Errorf("Failed to delete collection %d: %v", collectionID, err)
 		return err
