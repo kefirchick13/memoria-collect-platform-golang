@@ -37,7 +37,7 @@ func (h *Handler) SignUp(c *gin.Context) {
 		UpdatedAt: time.Now(),
 	}
 
-	user, err := h.service.Authorization.CreateUser(user)
+	newUser, err := h.service.AuthService.Register(user)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -47,13 +47,13 @@ func (h *Handler) SignUp(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"id": user.ID,
+		"user": newUser.ToResponse(),
 	})
 }
 
 type signInInput struct {
-	Mail     string
-	Password string
+	Mail     string `json:"mail" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }
 
 // Аунтефикация
@@ -66,7 +66,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 		return
 	}
 
-	token, err := h.service.SignInWithPassword(input.Mail, input.Password)
+	user, token, err := h.service.SignInWithPassword(input.Mail, input.Password)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -77,6 +77,7 @@ func (h *Handler) SignIn(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
+		"user":  user.ToResponse(),
 	})
 }
 
@@ -139,15 +140,11 @@ func (h *Handler) GithubCallback(c *gin.Context) {
 	// 5. Возврат токена клиенту
 	c.JSON(http.StatusOK, gin.H{
 		"token": appToken,
-		"user": gin.H{
-			"id":    user.ID,
-			"email": user.Mail,
-			"name":  user.Name,
-		},
+		"user":  user,
 	})
 }
 
-// Обмен кода на access token
+// Обмен кода из github на access token
 func (h *Handler) exchangeCodeForToken(code string) (string, error) {
 	tokenURL := "https://github.com/login/oauth/access_token"
 

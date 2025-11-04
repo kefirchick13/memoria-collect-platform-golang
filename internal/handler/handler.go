@@ -31,6 +31,17 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth.GET("/callback/github", h.GithubCallback)
 	}
 
+	user := api.Group("/user")
+	user.Use(h.userIdentity) // все эндпоинты требуют аутентификации
+	{
+		user.GET("/profile", h.GetUserProfile)
+		user.PUT("/profile", h.UpdateUserProfile)
+		user.PUT("/password", h.ChangePassword)
+		user.DELETE("/account", h.DeleteAccount)
+		user.POST("/github/link", h.LinkGitHubAccount)
+		user.POST("/github/unlink", h.UnlinkGitHubAccount)
+	}
+
 	collectinons := api.Group("/collections")
 	collectinons.Use(h.userIdentity)
 	{

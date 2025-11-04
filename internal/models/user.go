@@ -1,3 +1,4 @@
+// internal/models/user.go
 package models
 
 import "time"
@@ -12,8 +13,28 @@ type User struct {
 	GitHubID    *int    `json:"github_id,omitempty" db:"github_id"`
 	GitHubLogin *string `json:"github_login,omitempty" db:"github_login"`
 
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+	LastLoginAt *time.Time `json:"last_login_at,omitempty" db:"last_login_at"`
+	DeletedAt   *time.Time `json:"-" db:"deleted_at"` // скрываем от JSON
+}
+
+// UserResponse - DTO для ответа API
+type UserResponse struct {
+	ID        int     `json:"id"`
+	Name      string  `json:"name"`
+	Mail      string  `json:"mail"`
+	AvatarURL *string `json:"avatar_url"`
+}
+
+// Метод преобразования
+func (u *User) ToResponse() UserResponse {
+	return UserResponse{
+		ID:        u.ID,
+		Name:      u.Name,
+		Mail:      u.Mail,
+		AvatarURL: u.AvatarURL,
+	}
 }
 
 type GitHubUser struct {

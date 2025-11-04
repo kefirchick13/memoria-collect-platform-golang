@@ -8,11 +8,16 @@ import (
 	"go.uber.org/zap"
 )
 
-type Authorization interface {
+type UserRepository interface {
 	CreateUser(user *models.User) (*models.User, error)
-	GetUserByEmail(email string) (*models.User, error)    // Основной метод для поиска
-	GetUserByGitHubID(githubID int) (*models.User, error) // Для GitHub аутентификации
+	GetUserByID(id int) (*models.User, error)
+	GetUserByEmail(email string) (*models.User, error)
+	GetUserByGitHubID(githubID int) (*models.User, error)
+	UpdateUser(user *models.User) error
+	DeleteUser(id int) error
 	LinkGitHubToExistingUser(userID int, githubUser *models.GitHubUser) (*models.User, error)
+	UpdateUserPassword(userID int, hashedPassword string) error
+	UpdateLastLogin(userID int) error
 }
 
 type Collection interface {
@@ -34,14 +39,14 @@ type CollectionItem interface {
 }
 
 type Repository struct {
-	Authorization
+	UserRepository
 	Collection
 	CollectionItem
 }
 
 func NewRepository(db *sql.DB, logger *zap.SugaredLogger) *Repository {
 	return &Repository{
-		Authorization:  NewAuthPostgres(db, logger),
+		UserRepository: NewUserPostgres(db, logger),
 		Collection:     NewCollectionPostgres(db, logger),
 		CollectionItem: NewCollectionItemPostgres(db, logger),
 	}

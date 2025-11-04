@@ -14,7 +14,7 @@ func (h *Handler) GetItemsByType(c *gin.Context) {
 	// search for a type in query params, Default as "book"
 	currType := c.DefaultQuery("type", "book")
 	pagination := GetPaginationParams(c)
-	PaginatedResponse, err := h.service.CollectionItems.GetItemsByCurrentType(currType, pagination)
+	PaginatedResponse, err := h.service.CollectionItemService.GetItemsByCurrentType(currType, pagination)
 
 	if err != nil {
 		h.logger.Errorf("Error during getting items by type: %s", err)
@@ -27,17 +27,15 @@ func (h *Handler) GetItemsByType(c *gin.Context) {
 }
 
 func (h *Handler) GetCollectionItems(c *gin.Context) {
-	user_id, err := GetUserId(c)
-	if err != nil {
-		return
-	}
+	user_id, _ := h.GetUserId(c)
+
 	collection_uid := c.Param("id")
 	if collection_uid == "" {
 		responses.NewErrorResponse(c, http.StatusBadRequest, "id hasn't been provided")
 		return
 	}
 
-	items, err := h.service.CollectionItems.GetItemsByCollection(collection_uid, user_id)
+	items, err := h.service.CollectionItemService.GetItemsByCollection(collection_uid, user_id)
 	if err != nil {
 		responses.NewErrorResponse(c, http.StatusNotFound, "items aren't find")
 		return
@@ -51,10 +49,8 @@ type AddItemInput struct {
 }
 
 func (h *Handler) AddItemToCollection(c *gin.Context) {
-	user_id, err := GetUserId(c)
-	if err != nil {
-		return
-	}
+	user_id, _ := h.GetUserId(c)
+
 	collection_uid := c.Param("id")
 	if collection_uid == "" {
 		responses.NewErrorResponse(c, http.StatusBadRequest, "id hasn't been provided")
@@ -68,7 +64,7 @@ func (h *Handler) AddItemToCollection(c *gin.Context) {
 		return
 	}
 
-	_, err = h.service.CollectionItems.AddItemToCollection(input.ItemId, collection_uid, input.UserReview, user_id)
+	_, err := h.service.CollectionItemService.AddItemToCollection(input.ItemId, collection_uid, input.UserReview, user_id)
 	if err != nil {
 		switch err {
 		case service.ErrCollectionNotFound:
@@ -99,10 +95,8 @@ type CreateCollectionInput struct {
 }
 
 func (h *Handler) CreateCollectionItem(c *gin.Context) {
-	user_id, err := GetUserId(c)
-	if err != nil {
-		return
-	}
+	user_id, _ := h.GetUserId(c)
+
 	var input CreateCollectionInput
 
 	if err := c.BindJSON(&input); err != nil {
@@ -119,10 +113,10 @@ func (h *Handler) CreateCollectionItem(c *gin.Context) {
 		IsPublic:    input.IsPublic,
 		CreatorID:   &user_id,
 	}
-	id, err := h.service.CollectionItems.CreateCollectionItem(&collection_item)
+	id, err := h.service.CollectionItemService.CreateCollectionItem(&collection_item)
 
 	if err != nil {
-		h.logger.Errorf("Cant create collectionsItem, error: %d", err.Error())
+		h.logger.Errorf("Can't create collectionsItem, error: %d", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})

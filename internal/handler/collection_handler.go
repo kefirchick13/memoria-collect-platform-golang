@@ -8,14 +8,10 @@ import (
 )
 
 func (h *Handler) GetCollectionList(c *gin.Context) {
-	userId, err := GetUserId(c)
+	userId, _ := h.GetUserId(c)
 	pagination := GetPaginationParams(c)
 
-	if err != nil {
-		return
-	}
-
-	PaginatedResponse, err := h.service.Collection.GetCollectionsWithPagination(userId, pagination)
+	PaginatedResponse, err := h.service.CollectionService.GetCollectionsWithPagination(userId, pagination)
 	if err != nil {
 		h.logger.Errorf("Failed to get collections for user %d: %v", userId, err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -28,11 +24,8 @@ func (h *Handler) GetCollectionList(c *gin.Context) {
 }
 
 func (h *Handler) CreateCollection(c *gin.Context) {
-	user_id, err := GetUserId(c)
-	h.logger.Info("user_id: ", user_id)
-	if err != nil {
-		return
-	}
+	user_id, _ := h.GetUserId(c)
+
 	var input struct {
 		Name        string  `json:"name" binding:"required"`
 		Description string  `json:"description"`
@@ -56,7 +49,7 @@ func (h *Handler) CreateCollection(c *gin.Context) {
 		UserID:      user_id,
 	}
 
-	newCollection, err := h.service.Collection.CreateCollection(&collection)
+	newCollection, err := h.service.CollectionService.CreateCollection(&collection)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

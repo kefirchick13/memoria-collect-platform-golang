@@ -21,6 +21,7 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "errorAuthHeader",
 		})
+		c.Abort()
 		return
 	}
 	headerParts := strings.Split(header, " ")
@@ -28,14 +29,16 @@ func (h *Handler) userIdentity(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "invalid auth header",
 		})
+		c.Abort()
 		return
 	}
 
-	userId, err := h.service.Authorization.ParseToken(headerParts[1])
+	userId, err := h.service.AuthService.ParseToken(headerParts[1])
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": userId,
 		})
+		c.Abort()
 		return
 	}
 
@@ -43,12 +46,13 @@ func (h *Handler) userIdentity(c *gin.Context) {
 
 }
 
-func GetUserId(c *gin.Context) (int, error) {
+func (h *Handler) GetUserId(c *gin.Context) (int, error) {
 	id, ok := c.Get(userCtx)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "user is not found",
 		})
+		c.Abort()
 		return 0, errors.New("error id is not found")
 	}
 	idInt, ok := id.(int)
@@ -56,6 +60,7 @@ func GetUserId(c *gin.Context) (int, error) {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "userId is not valid type",
 		})
+		c.Abort()
 		return 0, errors.New("error id is not found")
 	}
 	return idInt, nil

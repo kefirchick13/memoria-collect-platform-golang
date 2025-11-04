@@ -16,44 +16,44 @@ var (
 	ErrItemAlreadyInCollection = errors.New("item already exists in collection")
 )
 
-type CollectionItemService struct {
+type collectionItemService struct {
 	itemRepo       repository.CollectionItem
 	collectionRepo repository.Collection
 	logger         *zap.SugaredLogger
 }
 
-func NewCollectionItemService(itemRepo repository.CollectionItem, collectionRepo repository.Collection, logger *zap.SugaredLogger) *CollectionItemService {
-	return &CollectionItemService{
+func NewCollectionItemService(itemRepo repository.CollectionItem, collectionRepo repository.Collection, logger *zap.SugaredLogger) *collectionItemService {
+	return &collectionItemService{
 		itemRepo:       itemRepo,
 		collectionRepo: collectionRepo,
 		logger:         logger,
 	}
 }
 
-func (s *CollectionItemService) GetItemsByCurrentType(currentType string, pagination pagination.PaginationRequest) (*pagination.PaginatedResponse[models.CollectionItem], error) {
+func (s *collectionItemService) GetItemsByCurrentType(currentType string, pagination pagination.PaginationRequest) (*pagination.PaginatedResponse[models.CollectionItem], error) {
 	return s.itemRepo.GetAllItemsWithCurrentTypePaginated(currentType, pagination)
 }
 
-func (s *CollectionItemService) GetItemsByCollection(collection_id string, user_id int) ([]models.CollectionItem, error) {
+func (s *collectionItemService) GetItemsByCollection(collection_id string, user_id int) ([]models.CollectionItem, error) {
 	return s.itemRepo.GetItemsByCollection(collection_id)
 }
 
-func (s *CollectionItemService) GetItemByID(collection_item_id string) (*models.CollectionItem, error) {
+func (s *collectionItemService) GetItemByID(collection_item_id string) (*models.CollectionItem, error) {
 	return s.itemRepo.GetItemByID((collection_item_id))
 }
 
-func (s *CollectionItemService) CreateCollectionItem(item *models.CollectionItem) (string, error) {
+func (s *collectionItemService) CreateCollectionItem(item *models.CollectionItem) (string, error) {
 	return s.itemRepo.CreateItem(item)
 }
-func (s *CollectionItemService) DeleteItem(collection_item_id string) error {
+func (s *collectionItemService) DeleteItem(collection_item_id string) error {
 	return s.itemRepo.DeleteCollectionItem(collection_item_id)
 }
 
-func (s *CollectionItemService) UpdateItem(item *models.CollectionItem) error {
+func (s *collectionItemService) UpdateItem(item *models.CollectionItem) error {
 	return s.itemRepo.UpdateCollectionItem(item)
 }
 
-func (s *CollectionItemService) AddItemToCollection(item_id string, collection_id string, user_review string, user_id int) (int, error) {
+func (s *collectionItemService) AddItemToCollection(item_id string, collection_id string, user_review string, user_id int) (int, error) {
 	// Проверяем существование коллекции и права доступа
 	collection, err := s.collectionRepo.GetCollectionByID(collection_id)
 	if err != nil {

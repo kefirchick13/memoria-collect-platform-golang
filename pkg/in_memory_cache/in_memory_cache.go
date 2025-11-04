@@ -7,7 +7,7 @@ import (
 )
 
 type CacheItem[T any] struct {
-	ExpiresAt time.Time
+	ExpiresAt int64
 	Value     T
 }
 
@@ -24,6 +24,8 @@ func NewMemoryCache[T any](ttl time.Duration) *Cache[T] {
 		items: make(map[string]CacheItem[T]),
 	}
 
+	cache.startEvictionLoop()
+
 	return cache
 }
 
@@ -32,7 +34,7 @@ func (c *Cache[T]) Set(key string, value T) {
 	defer c.mu.Unlock()
 
 	c.items[key] = CacheItem[T]{
-		ExpiresAt: time.Now().Add(c.ttl),
+		ExpiresAt: time.Now().Add(c.ttl).UnixNano(),
 		Value:     value,
 	}
 }
@@ -53,5 +55,25 @@ func (c *Cache[T]) Get(key string) (*T, error) {
 		return nil, fmt.Errorf("the item with this key does not exist")
 	} else {
 		return &cache_item.Value, nil
+	}
+}
+
+func (c *Cache[T]) startEvictionLoop() {
+	ticker := time.NewTicker(time.Minute)
+
+	for range ticker.C {
+		c.evictExpired()
+	}
+}
+
+func (c *Cache[T]) evictExpired() {
+	c.mu.RLock()
+	defer c.mu.Unlock()
+
+	now := time.Now().UnixNano()
+	for key, item := range c.items {
+		if item.ExpiresAt <= now {
+			delete(c.items, key)
+		}
 	}
 }

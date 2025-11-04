@@ -7,26 +7,26 @@ import (
 	"go.uber.org/zap"
 )
 
-type CollectionService struct {
+type collectionService struct {
 	repo   repository.Collection
 	logger *zap.SugaredLogger
 }
 
-func NewCollectionService(repo repository.Collection, logger *zap.SugaredLogger) *CollectionService {
-	return &CollectionService{
+func NewCollectionService(repo repository.Collection, logger *zap.SugaredLogger) *collectionService {
+	return &collectionService{
 		repo:   repo,
 		logger: logger,
 	}
 }
 
-func (s *CollectionService) CreateCollection(collection *models.Collection) (*models.Collection, error) {
+func (s *collectionService) CreateCollection(collection *models.Collection) (*models.Collection, error) {
 	return s.repo.CreateCollection(collection)
 }
 
-func (s *CollectionService) GetCollections(user_id int) ([]models.Collection, error) {
+func (s *collectionService) GetCollections(user_id int) ([]models.Collection, error) {
 	return s.repo.GetCollections(user_id)
 }
 
-func (s *CollectionService) GetCollectionsWithPagination(user_id int, pagination pagination.PaginationRequest) (*pagination.PaginatedResponse[models.Collection], error) {
+func (s *collectionService) GetCollectionsWithPagination(user_id int, pagination pagination.PaginationRequest) (*pagination.PaginatedResponse[models.Collection], error) {
 	return s.repo.GetCollectionsWithPagination(user_id, pagination)
 }

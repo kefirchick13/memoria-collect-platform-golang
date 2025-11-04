@@ -7,7 +7,9 @@ CREATE TABLE users (
     github_id int unique, -- Уникальный ID из GitHub
     github_login varchar(100),
     created_at timestamp with time zone default current_timestamp,
-    updated_at timestamp with time zone default current_timestamp
+    updated_at timestamp with time zone default current_timestamp,
+    last_login_at timestamp with time zone,
+    deleted_at timestamp with time zone
 );
 
 -- Индексы для быстрого поиска
