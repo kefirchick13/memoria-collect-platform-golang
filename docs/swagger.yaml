@@ -1,0 +1,714 @@
+basePath: /api/v1
+definitions:
+  handler.AddItemInput:
+    properties:
+      item_id:
+        type: string
+      user_review:
+        type: string
+    required:
+    - item_id
+    - user_review
+    type: object
+  handler.ChangePasswordInput:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        minLength: 8
+        type: string
+    required:
+    - current_password
+    - new_password
+    type: object
+  handler.CollectionItemResponse:
+    properties:
+      cover_image:
+        type: string
+      creator_id:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_custom:
+        type: boolean
+      is_public:
+        type: boolean
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  handler.CollectionResponse:
+    properties:
+      cover_image:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      is_custom:
+        type: boolean
+      is_public:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+      user_id:
+        type: string
+    type: object
+  handler.CreateCollectionInput:
+    properties:
+      cover_image:
+        type: string
+      description:
+        type: string
+      is_custom:
+        type: boolean
+      is_public:
+        type: boolean
+      name:
+        type: string
+      type:
+        type: string
+    required:
+    - name
+    - type
+    type: object
+  handler.CreateCollectionItemInput:
+    properties:
+      cover_image:
+        type: string
+      description:
+        type: string
+      is_custom:
+        type: boolean
+      is_public:
+        type: boolean
+      title:
+        type: string
+      type:
+        type: string
+    required:
+    - title
+    - type
+    type: object
+  handler.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handler.IDResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  handler.LinkGitHubInput:
+    properties:
+      github_code:
+        type: string
+    required:
+    - github_code
+    type: object
+  handler.MessageResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handler.PaginatedCollectionsResponse:
+    properties:
+      collections:
+        items:
+          $ref: '#/definitions/handler.CollectionResponse'
+        type: array
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  handler.PaginatedItemsResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.CollectionItemResponse'
+        type: array
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  handler.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  handler.UnlinkGitHubInput:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  handler.UpdateUserProfileInput:
+    properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  handler.UserProfileResponse:
+    properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
+      github_id:
+        type: integer
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  handler.signInInput:
+    properties:
+      mail:
+        type: string
+      password:
+        type: string
+    required:
+    - mail
+    - password
+    type: object
+  handler.signInResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  handler.signUpInput:
+    properties:
+      mail:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - mail
+    - name
+    - password
+    type: object
+  models.UserResponse:
+    properties:
+      avatar_url:
+        type: string
+      id:
+        type: integer
+      mail:
+        type: string
+      name:
+        type: string
+    type: object
+  responses.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: This is a sample server celler server.
+  title: Swagger Memoria API
+  version: "1.0"
+paths:
+  /auth/callback/github:
+    get:
+      description: Обрабатывает callback от GitHub после аутентификации
+      parameters:
+      - description: Код авторизации от GitHub
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная аутентификация
+          schema:
+            $ref: '#/definitions/handler.signInResponse'
+        "400":
+          description: Отсутствует код авторизации
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: OAuth callback от GitHub
+      tags:
+      - auth
+  /auth/github:
+    get:
+      description: Инициирует процесс OAuth аутентификации через GitHub
+      responses:
+        "302":
+          description: Перенаправление на GitHub
+      summary: Перенаправление на GitHub OAuth
+      tags:
+      - auth
+  /auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Аутентификация пользователя по email и паролю
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.signInInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешная аутентификация
+          schema:
+            $ref: '#/definitions/handler.signInResponse'
+        "400":
+          description: Неверные учетные данные
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Вход в систему
+      tags:
+      - auth
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового пользователя в системе
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.signUpInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Пользователь создан
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+  /collections:
+    get:
+      description: Возвращает пагинированный список коллекций пользователя
+      parameters:
+      - default: 1
+        description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Кол-во элементов на странице
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            $ref: '#/definitions/handler.PaginatedCollectionsResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Получить список коллекций
+      tags:
+      - collections
+    post:
+      consumes:
+      - application/json
+      description: Создает новую коллекцию для пользователя
+      parameters:
+      - description: Данные для создания коллекции
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCollectionInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Коллекция создана
+          schema:
+            $ref: '#/definitions/handler.CollectionResponse'
+        "400":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Создать коллекцию
+      tags:
+      - collections
+  /collections/{id}/items:
+    get:
+      description: Возвращает все элементы указанной коллекции
+      parameters:
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список элементов коллекции
+          schema: {}
+        "400":
+          description: Не указан ID коллекции
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Элементы не найдены
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Получить элементы коллекции
+      tags:
+      - collections
+    post:
+      consumes:
+      - application/json
+      description: Добавляет существующий элемент в указанную коллекцию
+      parameters:
+      - description: ID коллекции
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для добавления элемента
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.AddItemInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Элемент успешно добавлен
+          schema:
+            $ref: '#/definitions/handler.SuccessResponse'
+        "400":
+          description: Неверные входные данные
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "403":
+          description: Доступ запрещен
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Коллекция или элемент не найдены
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Элемент уже в коллекции
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Добавить элемент в коллекцию
+      tags:
+      - collections
+  /items:
+    get:
+      description: Возвращает пагинированный список элементов по указанному типу
+      parameters:
+      - default: book
+        description: Тип элементов
+        in: query
+        name: type
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Кол-во элементов на странице
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            $ref: '#/definitions/handler.PaginatedItemsResponse'
+        "502":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Получить элементы по типу
+      tags:
+      - items
+    post:
+      consumes:
+      - application/json
+      description: Создает новый элемент коллекции
+      parameters:
+      - description: Данные для создания элемента
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCollectionItemInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Элемент создан, возвращает ID
+          schema:
+            $ref: '#/definitions/handler.IDResponse'
+        "400":
+          description: Неверные входные данные
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Создать элемент коллекции
+      tags:
+      - items
+  /users/account:
+    delete:
+      consumes:
+      - application/json
+      description: Полностью удаляет аккаунт текущего пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Аккаунт успешно удален
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Удалить аккаунт
+      tags:
+      - users
+  /users/github/link:
+    post:
+      consumes:
+      - application/json
+      description: Привязывает GitHub аккаунт к текущему пользователю
+      parameters:
+      - description: Код авторизации GitHub
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LinkGitHubInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: GitHub аккаунт успешно привязан
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Неверные входные данные
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: GitHub аккаунт уже привязан к другому пользователю
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Привязать GitHub аккаунт
+      tags:
+      - users
+  /users/github/unlink:
+    post:
+      consumes:
+      - application/json
+      description: Отвязывает GitHub аккаунт от текущего пользователя
+      parameters:
+      - description: Пароль для подтверждения
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UnlinkGitHubInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: GitHub аккаунт успешно отвязан
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Неверные входные данные
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Отвязать GitHub аккаунт
+      tags:
+      - users
+  /users/password:
+    put:
+      consumes:
+      - application/json
+      description: Изменяет пароль текущего пользователя
+      parameters:
+      - description: Данные для изменения пароля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ChangePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пароль успешно изменен
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Неверные входные данные
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Изменить пароль
+      tags:
+      - users
+  /users/profile:
+    get:
+      description: Возвращает профиль текущего аутентифицированного пользователя
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Профиль пользователя
+          schema:
+            $ref: '#/definitions/handler.UserProfileResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Получить профиль пользователя
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные профиля текущего пользователя
+      parameters:
+      - description: Данные для обновления профиля
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUserProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Профиль успешно обновлен
+          schema:
+            $ref: '#/definitions/handler.MessageResponse'
+        "400":
+          description: Неверные входные данные
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "409":
+          description: Email уже используется
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Обновить профиль пользователя
+      tags:
+      - users
+securityDefinitions:
+  apiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

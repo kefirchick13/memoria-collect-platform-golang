@@ -27,6 +27,6 @@ Memoria - это современное приложение для учета �
 - **Аутентификация**: Email/password + OAuth (GitHub)
 - **Кеширование**: Redis + In-memory cache
 - **Хранение файлов**: Cloud storage для обложек
-
+- **Swagger**: swaggo golang local adress for swagger - http://localhost:3000/swagger/index.html
 
 

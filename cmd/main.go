@@ -14,6 +14,16 @@ import (
 	"go.uber.org/zap"        // самый быстрый логгер для go от uber
 )
 
+// @title           Swagger Memoria API
+// @version         1.0
+// @description     This is a sample server celler server.
+
+// @host      localhost:3000
+// @BasePath  /api/v1
+
+// @securityDefinitions.apiKey  apiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	// Logger init
 	customLogger, err := zap.NewProduction()

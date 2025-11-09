@@ -10,4 +10,8 @@ migrate -path ./schema -database 'postgres://postgres:1234@127.0.0.1:5433/postgr
 run app:
 go run cmd/main.go
 
-run swagger:
+swagger:
+	swag init -g cmd/main.go    
+
+serve-swagger:
+	swag serve -p 8080 swagger.yaml

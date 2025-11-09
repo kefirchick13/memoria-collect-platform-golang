@@ -2,7 +2,10 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	_ "github.com/kefirchick13/memoria-collect-platform-golang/docs" // Чтобы файлы swagger попали в билд
 	"github.com/kefirchick13/memoria-collect-platform-golang/internal/service"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +24,10 @@ func NewHandler(service *service.Service, logger *zap.SugaredLogger) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	router := gin.New()
 
-	api := router.Group("/api")
+	// Swagger документация
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	api := router.Group("/api/v1")
 
 	auth := api.Group("/auth")
 	{
